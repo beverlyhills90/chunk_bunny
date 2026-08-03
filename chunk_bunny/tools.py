@@ -1,10 +1,10 @@
-from chunking_models import RecursiveLevel, Literal, CodeBase
+from chunk_bunny.chunking_models import RecursiveLevel, Literal, CodeBase
 from typing import Generator
 from pathlib import Path
 import re
 import hashlib
 import ast
-# TODO Overlap logic pls
+
 
 
 class ChunkingError(Exception):
@@ -23,13 +23,13 @@ def hash_generator(file_path: Path) -> str:
         raise ChunkingError(f"Problem with file:{file_path}:{e}")
 
 
-def spliter(text: str, delimiter: str, mode: Literal) -> list[str]:
+def spliter(text: str, delimiter: str, mode: Literal | CodeBase) -> list[str]:
     if mode == "header":
         esc_delim = re.escape(delimiter)
         char = re.escape(delimiter[0])
         pattern = rf"(?=(?:^|\n){esc_delim}(?!{char})\s)"
         return [c for c in re.split(pattern, text) if c]
-    elif mode == "literal":
+    elif mode == "literal" or mode == "python":
         return text.split(delimiter)
 
 

@@ -43,5 +43,5 @@ class MarkdownChunkingSettings(BaseChunkingSettings):
     pass
 
 
-class CodeChunkingSettings(BaseModel):
-    chunk_overlap: int
+class CodeChunkingSettings(BaseChunkingSettings):
+    pass

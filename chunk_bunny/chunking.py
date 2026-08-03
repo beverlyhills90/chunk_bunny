@@ -1,18 +1,28 @@
 from collections.abc import Generator
 from pathlib import Path
 from pydantic import BaseModel, Field
-from chunking_models import *
+from chunk_bunny.chunking_models import *
 from tqdm import tqdm
-from presets import DefaultRulesForMarkdownChunking
+from chunk_bunny.presets import DefaultRulesForMarkdownChunking, DefaultRulesForCodeBase
 from tools import *
-from manifest import ManifestFile
-from chunk_storage import ChunkStorage
+from chunk_bunny.manifest import ManifestFile
+from chunk_bunny.chunk_storage import ChunkStorage
 import sqlite3
-
-# TODO add overlap
 
 
 class Chunker(BaseModel):
+    """Orchestrates file reading and content chunking for Markdown and Python files.
+
+    Attributes:
+        max_chunk_size (int): Maximum size allowed for an individual chunk. Defaults to 500.
+        markdown_settings (MarkdownChunkingSettings): Configuration settings for chunking
+            Markdown files, including overlap and recursive rules.
+        code_settings (CodeChunkingSettings): Configuration settings for chunking
+            source code, including overlap and recursive rules.
+        data_base_name (str): Path or name of the target SQLite database. Defaults to "index.db".
+        manifest_json (str): Path or name of the manifest file. Defaults to "manifest.json".
+    """
+
     max_chunk_size: int = Field(ge=0, default=500)
     markdown_settings: MarkdownChunkingSettings = Field(
         default_factory=lambda: MarkdownChunkingSettings(
@@ -20,13 +30,23 @@ class Chunker(BaseModel):
         )
     )
     code_settings: CodeChunkingSettings = Field(
-        default_factory=lambda: CodeChunkingSettings(chunk_overlap=200)
+        default_factory=lambda: CodeChunkingSettings(
+            chunk_overlap=200, recursive_rules=DefaultRulesForCodeBase
+        )
     )
     data_base_name: str = "index.db"
     manifest_json: str = "manifest.json"
 
     @staticmethod
     def get_next_file(dir: Path) -> Generator[Path]:
+        """Recursively yields Markdown and Python files from a directory.
+
+        Args:
+            dir (Path): The root directory to scan for files.
+
+        Yields:
+            Generator[Path]: Paths to files with '.py' or '.md' extensions.
+        """
         for item in dir.iterdir():
             if item.is_dir():
                 yield from Chunker.get_next_file(item)
@@ -34,10 +54,18 @@ class Chunker(BaseModel):
                 if item.suffix in [".py", ".md"]:
                     yield item
 
+    def chunk_code_base(self, file_path: Path) -> list[Chunk]:
+        """Reads a Python source file and splits its contents into chunks.
 
-    def chunk_code_base(
-        self, file_path: Path
-    ) -> list[Chunk]:
+        Args:
+            file_path (Path): Path to the Python file to be chunked.
+
+        Returns:
+            list[Chunk]: A list of validated Chunk models for the Python file.
+
+        Raises:
+            ChunkingError: If an I/O error occurs while reading the file.
+        """
         chunks = []
         try:
             with open(file=file_path, encoding="utf-8") as f:
@@ -56,10 +84,18 @@ class Chunker(BaseModel):
         except OSError as e:
             raise ChunkingError(f"Problem with file {file_path}: {e}")
 
+    def chunk_markdown(self, file_path: Path) -> list[Chunk]:
+        """Reads a Markdown file and splits its contents into chunks using defined rules.
 
-    def chunk_markdown(
-        self, file_path: Path
-    ) -> list[Chunk]:
+        Args:
+            file_path (Path): Path to the Markdown file to be chunked.
+
+        Returns:
+            list[Chunk]: A list of validated Chunk models for the Markdown file.
+
+        Raises:
+            ChunkingError: If an I/O error occurs while reading the file.
+        """
         chunks = []
         try:
             rules = self.markdown_settings.recursive_rules
@@ -78,7 +114,6 @@ class Chunker(BaseModel):
         except OSError as e:
             raise ChunkingError(f"Problem with file {file_path}: {e}")
         return chunks
-
 
     def run(self, source_dir: Path) -> None:
         """Main chunking pipeline"""
@@ -117,7 +152,7 @@ class Chunker(BaseModel):
                     errors.append(e)
             with connection:
                 ChunkStorage.delete_chunks_by_file(connection, str(file))
-                ChunkStorage.insert_chunks(connection,chunks)
+                ChunkStorage.insert_chunks(connection, chunks)
                 manifest_rules.update_chunk_count(file, len(chunks))
         connection.close()
 

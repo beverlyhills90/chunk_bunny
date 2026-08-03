@@ -1,4 +1,4 @@
-from chunking_models import *
+from chunk_bunny.chunking_models import *
 
 
 DefaultRulesForCodeBase = [

@@ -1,5 +1,5 @@
 import sqlite3
-from chunking_models import Chunk
+from chunk_bunny.chunking_models import Chunk
 from pathlib import Path
 
 
