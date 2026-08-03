@@ -1,4 +1,4 @@
-from chunk_bunny.chunking_models import RecursiveLevel, Literal, CodeBase
+from chunking_models import RecursiveLevel, Literal, CodeBase
 from typing import Generator
 from pathlib import Path
 import re

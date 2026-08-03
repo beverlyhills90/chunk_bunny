@@ -3,10 +3,10 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from chunk_bunny.chunking_models import *
 from tqdm import tqdm
-from chunk_bunny.presets import DefaultRulesForMarkdownChunking, DefaultRulesForCodeBase
+from presets import DefaultRulesForMarkdownChunking, DefaultRulesForCodeBase
 from tools import *
-from chunk_bunny.manifest import ManifestFile
-from chunk_bunny.chunk_storage import ChunkStorage
+from manifest import ManifestFile
+from chunk_storage import ChunkStorage
 import sqlite3
 
 
