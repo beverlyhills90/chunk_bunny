@@ -8,7 +8,7 @@ import ast
 
 
 class ChunkingError(Exception):
-    def __init__(self, msg="Unknow chunking Error"):
+    def __init__(self, msg="Unknow chunking ERROR"):
         super().__init__(msg)
 
 
