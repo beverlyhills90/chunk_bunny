@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from pathlib import Path
 from pydantic import BaseModel, Field
-from chunk_bunny.chunking_models import *
+from chunking_models import *
 from tqdm import tqdm
 from presets import DefaultRulesForMarkdownChunking, DefaultRulesForCodeBase
 from tools import *
