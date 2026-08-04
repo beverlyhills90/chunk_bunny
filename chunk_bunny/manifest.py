@@ -43,7 +43,7 @@ class ManifestFile(BaseModel):
         """
         res = False
         try:
-            with open(self.manifest_json, "r") as manifest:
+            with open(self.manifest_json, "r+") as manifest:
                 raw_json = manifest.read()
                 if raw_json.strip():
                     content = json.loads(raw_json)
