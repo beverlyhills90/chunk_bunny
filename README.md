@@ -81,10 +81,8 @@ This creates (or updates) `index.db` and `manifest.json` in the current director
 
 ## Known limitations / TODO
 
-- **Chunk overlap isn't implemented yet** — `chunk_overlap` exists as a setting, but the algorithms don't use it.
-- **The AST chunker only splits top-level nodes** — recursive descent into `node.body` to re-split oversized nested constructs (e.g. a class with dozens of methods) isn't implemented yet; it falls back to line-by-line splitting instead.
+- **The AST chunker only splits top-level nodes** — recursive descent into `node.body` to re-split oversized nested constructs (e.g. a class with dozens of methods) isn't implemented yet; it falls back to line-by-line splitting instead. #ADD but need to test
 - `ChunkStorage.get_all_chunks` and `get_chunks_by_ids` are stubs, not implemented.
-- In `Chunker.run`, the call `self.chunk_markdown(file, manifest_rules)` on `SyntaxError` doesn't match the method's signature (it only takes `file_path`) — needs fixing.
 - `breadcrumbs` and `metadata` on `Chunk` are currently populated with empty defaults — intended for future context (e.g. "which class/section this chunk belongs to").
 
 ## Dependencies
