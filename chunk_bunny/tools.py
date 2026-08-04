@@ -188,9 +188,19 @@ def get_next_cuhnk_code(text: str, chunk_size: int) -> Generator[tuple]:
             else:
                 if current_chunk:
                     yield (start_chunk, char_counter, "".join(current_chunk))
-                yield from _split_lines(
-                    meta_lines, line_start, line_end, chunk_size, char_counter
-                )
+                   
+                    current_chunk = []
+                if hasattr(node, "body") and node.body:
+                    body_line_start = node.body[0].lineno
+                    slice_of_top_body = meta_lines[line_start-1 : body_line_start - 1]
+                    header_len = sum(l[0] for l in slice_of_top_body)
+                    if slice_of_top_body:
+                        yield (char_counter, char_counter + header_len, "".join(l[1] for l in slice_of_top_body))
+                    yield from _split_nodes(node.body,meta_lines,clear_lines,chunk_size,char_counter + header_len)
+                else:
+                    yield from _split_lines(
+                        meta_lines, line_start, line_end, chunk_size, char_counter
+                    )
                 char_counter += sum(
                     l[0] for l in meta_lines[line_start - 1 : line_end]
                 )

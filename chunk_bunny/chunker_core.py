@@ -128,7 +128,7 @@ class Chunker(BaseModel):
             manifest_json=self.manifest_json, max_chunk_size=self.max_chunk_size
         )
         connection = sqlite3.connect(self.data_base_name)
-        if not db_state or not manifest_rules.check_max_chunk_size():
+        if manifest_rules.check_max_chunk_size() or not db_state:
             ChunkStorage.clear_all_chunks(connection)
         for file in tqdm(all_files, desc="Chunking files", unit="file"):
             hash_res = manifest_rules.check_file_hash(file)
